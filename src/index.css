@@ -4,29 +4,43 @@
 
 @import "tailwindcss";
 
-*{
-    margin:0;
-    padding:0;
-    box-sizing: border-box;
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
 }
 
-.light-font, body, button, h1, h2, h3, h4, h5, h6, input, select, textarea {
-    font-family: Euclid, Helvetica Neue, Helvetica, Arial, sans-serif;
+.light-font,
+body,
+button,
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+input,
+select,
+textarea {
+  font-family: Euclid, Helvetica Neue, Helvetica, Arial, sans-serif;
 }
 
-
-body, button, input, select, textarea {
-    font-family: Euclid, Helvetica Neue, Helvetica, Arial, sans-serif;
+body,
+button,
+input,
+select,
+textarea {
+  font-family: Euclid, Helvetica Neue, Helvetica, Arial, sans-serif;
 }
- 
+
 @media (max-width: 768px) {
-    .custom-grid {
-      grid-template-columns: 1fr;
-    }
+  .custom-grid {
+    grid-template-columns: 1fr;
   }
-  
-  @media (min-width: 769px) {
-    .custom-grid {
-      grid-template-columns: repeat(4, 1fr);
-    }
+}
+
+@media (min-width: 769px) {
+  .custom-grid {
+    grid-template-columns: repeat(4, 1fr);
   }
+}

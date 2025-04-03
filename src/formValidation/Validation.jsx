@@ -1,5 +1,3 @@
-// import React from 'react';
-
 export const validateEmail = (email) => {
   if (!email) {
     return "Please enter a valid email in the name@email.com format.";
@@ -18,7 +16,8 @@ export const validatePassword = (password) => {
   return "";
 };
 
-export const validateForm = (formData) => {
+
+export const validateLoginForm = (formData) => {
   let errors = {};
   errors.email = validateEmail(formData.email);
   errors.password = validatePassword(formData.password);

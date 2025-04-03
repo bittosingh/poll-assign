@@ -1,78 +1,81 @@
-import "react-toastify/dist/ReactToastify.css";
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../redux/authSlice";
 import { Link } from "react-router-dom";
-import { FaFacebook, FaEye } from "react-icons/fa"; // Only FaEye
+import { FaFacebook } from "react-icons/fa";
 import hCaptchaImg from "../assets/footer/hcapctha.jpg";
 import { toast, ToastContainer } from "react-toastify";
-import { validateForm } from "../formValidation/Validation";
+import { validateLoginForm } from "../formValidation/Validation";
+import PasswordConfirmation from "../components/PasswordConfirmation"; // Importing PasswordConfirmation component
 
 const LoginPage = () => {
   const dispatch = useDispatch();
   const { loading, error, user } = useSelector((state) => state.auth);
 
-  const [formData, setFormData] = useState({
+  const [formState, setFormState] = useState({
     email: "",
     password: "",
     captchaValidation: false,
+    errors: {
+      email: "",
+      password: "",
+    },
+    // isPasswordVisible: false,
   });
-  const [isPasswordVisible, setIsPasswordVisible] = useState(false);
-  const [passwordIconColor, setPasswordIconColor] = useState("#7f8b96");
-  const [emailError, setEmailError] = useState("");
-  const [passwordError, setPasswordError] = useState("");
 
-  const handleEmailChange = (e) => {
-    const emailValue = e.target.value;
-    setFormData({
-      ...formData,
-      email: emailValue,
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormState((prevState) => {
+      const updatedState = {
+        ...prevState,
+        [name]: value,
+        errors: {
+          ...prevState.errors,
+          [name]: validateLoginForm({ ...prevState, [name]: value })[name], // Update error for specific field
+        },
+      };
+
+      return updatedState;
     });
-
-    const emailValidationError = validateForm({
-      ...formData,
-      email: emailValue,
-    }).email;
-    setEmailError(emailValidationError);
-  };
-
-  const handlePasswordChange = (e) => {
-    const passwordValue = e.target.value;
-    setFormData({
-      ...formData,
-      password: passwordValue,
-    });
-
-    const passwordValidationError = validateForm({
-      ...formData,
-      password: passwordValue,
-    }).password;
-    setPasswordError(passwordValidationError);
   };
 
   const togglePasswordVisibility = () => {
-    setIsPasswordVisible(!isPasswordVisible);
-    setPasswordIconColor(isPasswordVisible ? "#7f8b96" : "#19b7ea");
+    setFormState((prevState) => ({
+      ...prevState,
+      isPasswordVisible: !prevState.isPasswordVisible,
+    }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    const errors = validateForm(formData);
-    setEmailError(errors.email);
-    setPasswordError(errors.password);
+    const errors = validateLoginForm(formState);
+    setFormState((prevState) => ({
+      ...prevState,
+      errors,
+    }));
+
     if (errors.email || errors.password) return;
-    dispatch(loginUser({ email: formData.email, password: formData.password }))
-      .then(() => {
-        setFormData({
+
+    dispatch(
+      loginUser({ email: formState.email, password: formState.password })
+    );
+  };
+
+  useEffect(() => {
+    if (user) {
+      setFormState({
+        email: "",
+        password: "",
+        captchaValidation: false,
+        isPasswordVisible: false,
+        errors: {
           email: "",
           password: "",
-          captchaValidation: false,
-        });
-      })
-      .catch(() => {
-        toast.error("Login failed. Please try again!");
+        },
       });
-  };
+    }
+  }, [user]);
+
   return (
     <div
       style={{
@@ -108,62 +111,31 @@ const LoginPage = () => {
                 <input
                   type="email"
                   id="email"
-                  value={formData.email}
-                  onChange={handleEmailChange}
+                  name="email"
+                  value={formState.email}
+                  onChange={handleChange}
                   placeholder="name@email.com"
                   className={`w-full h-[44px] font-sans border bg-[#e8eaee] shadow-inner px-[20px] py-[10px] text-[17px] leading-[24px] font-medium rounded-[7px] text-[#374756] focus:outline-none ${
-                    emailError
+                    formState.errors.email
                       ? "border-red-500 focus:ring-0"
                       : "border-transparent focus:ring-1 focus:ring-[#19b7ea]"
                   }`}
                 />
-                {emailError && (
+                {formState.errors.email && (
                   <p className="bg-[#FF768F] text-[#374756] text-sm leading-[24px] rounded-[6px] my-[5px] mb-[16px] px-[10px] text-left">
-                    {emailError}
+                    {formState.errors.email}
                   </p>
                 )}
               </div>
-              <div className="mb-4 relative">
-                <label
-                  htmlFor="password"
-                  className="block text-sm text-[#5a6978] mb-[12px] mt-[20px] font-sans text-[15px] font-medium"
-                >
-                  Password:
-                </label>
-                <div className="relative">
-                  <input
-                    type={isPasswordVisible ? "text" : "password"}
-                    id="password"
-                    value={formData.password}
-                    onChange={handlePasswordChange}
-                    placeholder="Password"
-                    className={`w-full h-[44px] border bg-[#e8eaee] shadow-inner px-[20px] py-[10px] text-[17px] leading-[24px] font-medium rounded-[7px] text-[#374756] focus:outline-none ${
-                      passwordError
-                        ? "border-red-500 focus:ring-0"
-                        : "border-transparent focus:ring-1 focus:ring-[#19b7ea]"
-                    }`}
-                  />
-                  {/* Eye icon button */}
-                  <button
-                    type="button"
-                    onClick={togglePasswordVisibility}
-                    className="absolute right-4 top-1/2 transform -translate-y-1/2"
-                  >
-                    <FaEye
-                      size={22}
-                      className="text-[#7f8b96]"
-                      style={{ color: passwordIconColor }}
-                    />
-                  </button>
-                </div>
 
-                {/* Error message if it exists */}
-                {passwordError && (
-                  <p className="bg-[#FF768F] text-[#374756] text-sm leading-[24px] rounded-[6px] mt-[5px] mb-[16px] px-[10px] text-left">
-                    {passwordError}
-                  </p>
-                )}
-              </div>
+              <PasswordConfirmation
+                password={formState.password}
+                isPasswordVisible={formState.isPasswordVisible}
+                togglePasswordVisibility={togglePasswordVisibility}
+                handleChange={handleChange}
+                error={formState.errors.password}
+              />
+
               <div className="mb-6 text-center mb-[15px] mt-[19px]">
                 <Link
                   to=""
@@ -177,18 +149,18 @@ const LoginPage = () => {
                   <div className="flex items-center justify-between">
                     <div
                       className={`mr-2 mt-5 w-[30px] h-[30px] relative border-2 rounded-[4px] cursor-pointer ${
-                        formData.captchaValidation
+                        formState.captchaValidation
                           ? "border-[#215b6e]"
                           : "border-gray-400"
                       }`}
                       onClick={() =>
-                        setFormData({
-                          ...formData,
-                          captchaValidation: !formData.captchaValidation,
-                        })
+                        setFormState((prevState) => ({
+                          ...prevState,
+                          captchaValidation: !prevState.captchaValidation,
+                        }))
                       }
                     >
-                      {formData.captchaValidation && (
+                      {formState.captchaValidation && (
                         <svg
                           className="w-6 h-10 border-green-400 text-green-600 absolute top-0 left-0 right-0 bottom-0 m-auto"
                           fill="none"
@@ -234,18 +206,16 @@ const LoginPage = () => {
               </div>
               <button
                 type="submit"
-                className={`w-full py-[13px] px-0 leading-[26px] rounded-[250px] shadow-[0_5.83px_19.83px_rgba(8,46,81,.13)] 
-                       ${
-                         formData.captchaValidation
-                           ? "bg-[#19b7ea] text-white"
-                           : "bg-[#dadada] text-[#999]"
-                       }
-                  border-0 cursor-pointer text-[20px] mb-[20px]`}
+                className={`w-full py-[13px] px-0 leading-[26px] rounded-[250px] shadow-[0_5.83px_19.83px_rgba(8,46,81,.13)] ${
+                  formState.captchaValidation
+                    ? "bg-[#19b7ea] text-white"
+                    : "bg-[#dadada] text-[#999]"
+                } border-0 cursor-pointer text-[20px] mb-[20px]`}
                 disabled={
                   loading ||
-                  !formData.captchaValidation ||
-                  emailError ||
-                  passwordError
+                  !formState.captchaValidation ||
+                  formState.errors.email ||
+                  formState.errors.password
                 }
               >
                 {loading ? (
@@ -262,14 +232,14 @@ const LoginPage = () => {
             </div>
             <div className="my-6 flex flex-col items-center justify-center space-x-4">
               <button
-                className="flex w-full h-[45px] cursor-[pointer] items-center justify-center py-2 px-4 rounded-md text-[15px] font-[500] text-[#1b3e85] bg-[white] rounded-[8px] mb-[17px]"
+                className="flex w-full h-[45px] cursor-[pointer] items-center justify-center py-2 px-4 rounded-md text-[15px] font-[500] text-[#1b3e85] bg-[white] rounded-[8px] mb-[17px] "
                 style={{ border: "1px solid rgba(150, 159, 175, .7)" }}
               >
                 <FaFacebook className="mr-2 w-[30px] h-[25px] text-[#1b3e85]" />
                 Log in with Facebook*
               </button>
               <button
-                className="flex w-full h-[45px] items-center justify-center py-2 text-[#5a6978] px-4 rounded-md bg-[white] rounded-[8px] cursor-[pointer]"
+                className="flex w-full h-[45px] items-center justify-center py-2 text-[#5a6978] px-4 rounded-md bg-[white] rounded-[8px] cursor-[pointer] "
                 style={{ border: "1px solid rgba(150, 159, 175, .7)" }}
               >
                 <img
@@ -301,6 +271,7 @@ const LoginPage = () => {
               >
                 Privacy Policy
               </a>
+              .
             </p>
           </div>
         </div>
