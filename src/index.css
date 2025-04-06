@@ -1,0 +1,42 @@
+@import "tailwindcss";
+
+@media (max-width: 768px) {
+  .custom-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (min-width: 769px) {
+  .custom-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+@font-face {
+  font-family: 'EuclidMedium';
+  src: url('../public/font/Euclid\ Circular\ A\ Medium.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+
+@font-face {
+ font-family: 'EuclidLight';
+ src: url('../public/font/Euclid\ Circular\ A\ Light.ttf') format('truetype');
+}
+
+
+
+@font-face {
+ font-family: 'EuclidBold';
+ src: url('../public/font/Euclid\ Circular\ A\ Bold.ttf') format('truetype');
+}
+
+
+@theme{
+ --font-euclidMedium: "EuclidMedium";
+ --font-eculidLight:"EuclidLight";
+ --font-eculidBold:"EuclidBold"
+
+}
