@@ -1,18 +1,20 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { FaEye } from 'react-icons/fa';
 
 const PasswordConfirmation = ({
     password,
-    isPasswordVisible,
-    togglePasswordVisibility,
     handleChange,
-    error 
+    error
 }) => {
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
+    const togglePasswordVisibility = () => {
+        setIsPasswordVisible((prev) => !prev);
+    };
     return (
         <div className="mb-4 relative">
             <label
                 htmlFor="password"
-                className="block text-sm text-[#5a6978] mb-[12px] mt-[20px] font-sans text-[15px] font-medium"
+                className="block text-sm text-[#5a6978] mb-[12px] mt-[20px] font-euclidMedium text-[15px] "
             >
                 Password:
             </label>

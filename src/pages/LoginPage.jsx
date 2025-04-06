@@ -1,64 +1,47 @@
 import React, { useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { loginUser } from "../redux/authSlice";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaFacebook } from "react-icons/fa";
-import hCaptchaImg from "../assets/footer/hcapctha.jpg";
 import { toast, ToastContainer } from "react-toastify";
 import { validateLoginForm } from "../formValidation/Validation";
-import PasswordConfirmation from "../components/PasswordConfirmation"; // Importing PasswordConfirmation component
+import PasswordConfirmation from "../components/PasswordConfirmation";
+import BgImg from "../assets/bg/background-img.png";
+import Captcha from "../components/CAPTCHA";
 
 const LoginPage = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
   const { loading, error, user } = useSelector((state) => state.auth);
 
   const [formState, setFormState] = useState({
     email: "",
     password: "",
-    captchaValidation: false,
-    errors: {
-      email: "",
-      password: "",
-    },
-    // isPasswordVisible: false,
   });
 
+  const [errorState, setErrorState] = useState({
+    email: "",
+    password: "",
+  });
+
+  const [captchaValidation, setCaptchaValidation] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormState((prevState) => {
-      const updatedState = {
-        ...prevState,
-        [name]: value,
-        errors: {
-          ...prevState.errors,
-          [name]: validateLoginForm({ ...prevState, [name]: value })[name], // Update error for specific field
-        },
-      };
-
-      return updatedState;
-    });
-  };
-
-  const togglePasswordVisibility = () => {
     setFormState((prevState) => ({
       ...prevState,
-      isPasswordVisible: !prevState.isPasswordVisible,
+      [name]: value,
     }));
   };
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    setSubmitted(true);
     const errors = validateLoginForm(formState);
-    setFormState((prevState) => ({
-      ...prevState,
-      errors,
-    }));
-
-    if (errors.email || errors.password) return;
-
-    dispatch(
-      loginUser({ email: formState.email, password: formState.password })
-    );
+    setErrorState(errors);
+    const hasErrors = Object.values(errors).some((err) => err);
+    if (hasErrors || !captchaValidation) return;
+    dispatch(loginUser(formState));
   };
 
   useEffect(() => {
@@ -68,25 +51,24 @@ const LoginPage = () => {
         password: "",
         captchaValidation: false,
         isPasswordVisible: false,
-        errors: {
-          email: "",
-          password: "",
-        },
       });
+      setErrorState({
+        email: "",
+        password: "",
+      });
+      navigate("/polls");
     }
-  }, [user]);
-
+  }, [user, navigate]);
   return (
     <div
       style={{
-        background:
-          "url(https://static3.zoosk.com/browser-86c22481/touch/en-GB/login-image-aes-v2-desktop.1bed4140b688bfc1e97a.png) center bottom no-repeat #F7F8FB",
+        background: `url(${BgImg}) center bottom no-repeat #F7F8FB`,
         margin: "0",
       }}
     >
       <div className="flex justify-center">
         <div
-          className="w-full max-w-[480px] relative sm:w-[100%] sm:px-4 lg:w-[480px] sm:p-26 lg:mt-[-125px] pb-27"
+          className="w-full max-w-[480px] relative sm:w-[100%] sm:px-4 lg:w-[480px] sm:p-26 lg:mt-[-125px] pb-27 p-2.5"
           style={{ filter: "drop-shadow(0px 4px 20px rgba(55, 71, 86, .15))" }}
         >
           <div className="top-0 left-0 w-full">
@@ -104,36 +86,35 @@ const LoginPage = () => {
               <div className="mb-4">
                 <label
                   htmlFor="email"
-                  className="block text-sm text-[#5a6978] mb-[10px] pt-[40px] leading-[22px] font-sans text-[15px] font-medium"
+                  className="block text-sm text-[#5a6978] mb-[10px] pt-[40px] leading-[22px] font-euclidMedium text-[15px] font-[400]"
                 >
                   Email Address:
                 </label>
                 <input
-                  type="email"
+                  type="text"
                   id="email"
                   name="email"
                   value={formState.email}
                   onChange={handleChange}
                   placeholder="name@email.com"
                   className={`w-full h-[44px] font-sans border bg-[#e8eaee] shadow-inner px-[20px] py-[10px] text-[17px] leading-[24px] font-medium rounded-[7px] text-[#374756] focus:outline-none ${
-                    formState.errors.email
+                    submitted && errorState.email
                       ? "border-red-500 focus:ring-0"
                       : "border-transparent focus:ring-1 focus:ring-[#19b7ea]"
                   }`}
                 />
-                {formState.errors.email && (
+                {submitted && errorState.email && (
                   <p className="bg-[#FF768F] text-[#374756] text-sm leading-[24px] rounded-[6px] my-[5px] mb-[16px] px-[10px] text-left">
-                    {formState.errors.email}
+                    {errorState.email}
                   </p>
                 )}
               </div>
 
               <PasswordConfirmation
                 password={formState.password}
-                isPasswordVisible={formState.isPasswordVisible}
-                togglePasswordVisibility={togglePasswordVisibility}
                 handleChange={handleChange}
-                error={formState.errors.password}
+                // error={errorState.password}
+                error={submitted ? errorState.password : ""}
               />
 
               <div className="mb-6 text-center mb-[15px] mt-[19px]">
@@ -144,102 +125,48 @@ const LoginPage = () => {
                   Forgot Password?
                 </Link>
               </div>
-              <div className="box-border w-[300px] h-auto p-0 m-0 border border-solid rounded-[4px] border-[#e0e0e0] bg-[#fafafa] cursor-pointer block mb-[7px]">
-                <div className="flex flex-col items-center justify-center">
-                  <div className="flex items-center justify-between">
-                    <div
-                      className={`mr-2 mt-5 w-[30px] h-[30px] relative border-2 rounded-[4px] cursor-pointer ${
-                        formState.captchaValidation
-                          ? "border-[#215b6e]"
-                          : "border-gray-400"
-                      }`}
-                      onClick={() =>
-                        setFormState((prevState) => ({
-                          ...prevState,
-                          captchaValidation: !prevState.captchaValidation,
-                        }))
-                      }
-                    >
-                      {formState.captchaValidation && (
-                        <svg
-                          className="w-6 h-10 border-green-400 text-green-600 absolute top-0 left-0 right-0 bottom-0 m-auto"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="3"
-                          viewBox="0 0 24 24"
-                          xmlns="http://www.w3.org/2000/svg"
-                        >
-                          <path
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            d="M5 13l4 4L19 7"
-                          ></path>
-                        </svg>
-                      )}
-                    </div>
-                    <label
-                      htmlFor="captcha"
-                      className="text-[rgb(85,85,85)] pr-20 pt-6 text-[13px] pl-[10px]"
-                    >
-                      I am human
-                    </label>
-                    <img
-                      src={hCaptchaImg}
-                      className="h-[43px] ml-[30px] mt-1"
-                    />
-                  </div>
-                  <div className="flex justify-center ml-58 mb-2">
-                    <a
-                      href="#"
-                      className="text-sm text-[#374756] text-[8px] hover:underline"
-                    >
-                      Privacy-
-                    </a>
-                    <a
-                      href="#"
-                      className="text-sm text-[#374756] text-[8px] hover:underline"
-                    >
-                      Terms
-                    </a>
-                  </div>
-                </div>
-              </div>
+              <Captcha
+                captchaValidation={captchaValidation}
+                setCaptchaValidation={setCaptchaValidation}
+              />
               <button
                 type="submit"
-                className={`w-full py-[13px] px-0 leading-[26px] rounded-[250px] shadow-[0_5.83px_19.83px_rgba(8,46,81,.13)] ${
-                  formState.captchaValidation
+                className={`w-full py-[13px] px-0 leading-[26px] font-sans rounded-[250px] shadow-[0_5.83px_19.83px_rgba(8,46,81,.13)] ${
+                  captchaValidation
                     ? "bg-[#19b7ea] text-white"
                     : "bg-[#dadada] text-[#999]"
                 } border-0 cursor-pointer text-[20px] mb-[20px]`}
                 disabled={
-                  loading ||
-                  !formState.captchaValidation ||
-                  formState.errors.email ||
-                  formState.errors.password
+                  loading || !captchaValidation
+                  // ||
+                  // errorState.email ||
+                  // errorState.password
                 }
               >
                 {loading ? (
-                  <div className="w-6 h-6 border-4 border-t-4 border-blue-500 border-solid rounded-full animate-spin mx-auto"></div>
+                  <div className="w-6 h-6 border-4 border-t-4 border-blue-500 border-solid rounded-full animate-spin mx-auto "></div>
                 ) : (
                   "Log In"
                 )}
               </button>
             </form>
+
+            {/* Social login buttons */}
             <div className="flex items-center justify-evenly">
               <div className="border border-[#7f8b96] w-[100px]"></div>
               <span className="text-[#7f8b96] text-[13px]">Or</span>
               <div className="w-[100px] border border-[#7f8b96]"></div>
             </div>
-            <div className="my-6 flex flex-col items-center justify-center space-x-4">
+            <div className="my-6 flex flex-col items-center justify-center space-y-4">
               <button
-                className="flex w-full h-[45px] cursor-[pointer] items-center justify-center py-2 px-4 rounded-md text-[15px] font-[500] text-[#1b3e85] bg-[white] rounded-[8px] mb-[17px] "
+                className="flex w-full h-[45px] cursor-pointer items-center justify-center py-2 px-4 rounded-md text-[15px] font-[500] text-[#1b3e85] bg-[white] rounded-[8px] mb-[17px] font-euclidMedium whitespace-nowrap"
                 style={{ border: "1px solid rgba(150, 159, 175, .7)" }}
               >
                 <FaFacebook className="mr-2 w-[30px] h-[25px] text-[#1b3e85]" />
                 Log in with Facebook*
               </button>
               <button
-                className="flex w-full h-[45px] items-center justify-center py-2 text-[#5a6978] px-4 rounded-md bg-[white] rounded-[8px] cursor-[pointer] "
+                className="flex w-full h-[45px] items-center justify-center py-2 px-4 rounded-md bg-[white] rounded-[8px] text-[#5a6978] cursor-pointer font-euclidMedium text-center whitespace-nowrap"
                 style={{ border: "1px solid rgba(150, 159, 175, .7)" }}
               >
                 <img
@@ -250,7 +177,8 @@ const LoginPage = () => {
                 Log in with Google*
               </button>
             </div>
-            <p className="text-sm text-left text-[#7f8b96] text-[11px] leading-[20px] pb-[20px] mt-[-10px]">
+
+            <p className="text-sm text-left text-[#7f8b96] text-[11px] leading-[20px] pb-[20px] mt-[-10px] font-eculidLight">
               *By selecting "Log in with Facebook" or "Log in with Google", you
               agree to our{" "}
               <a
@@ -280,5 +208,4 @@ const LoginPage = () => {
     </div>
   );
 };
-
 export default LoginPage;

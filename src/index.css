@@ -1,37 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 @import "tailwindcss";
-
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-}
-
-.light-font,
-body,
-button,
-h1,
-h2,
-h3,
-h4,
-h5,
-h6,
-input,
-select,
-textarea {
-  font-family: Euclid, Helvetica Neue, Helvetica, Arial, sans-serif;
-}
-
-body,
-button,
-input,
-select,
-textarea {
-  font-family: Euclid, Helvetica Neue, Helvetica, Arial, sans-serif;
-}
 
 @media (max-width: 768px) {
   .custom-grid {
@@ -43,4 +10,33 @@ textarea {
   .custom-grid {
     grid-template-columns: repeat(4, 1fr);
   }
+}
+
+@font-face {
+  font-family: 'EuclidMedium';
+  src: url('../public/font/Euclid\ Circular\ A\ Medium.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+
+
+
+@font-face {
+ font-family: 'EuclidLight';
+ src: url('../public/font/Euclid\ Circular\ A\ Light.ttf') format('truetype');
+}
+
+
+
+@font-face {
+ font-family: 'EuclidBold';
+ src: url('../public/font/Euclid\ Circular\ A\ Bold.ttf') format('truetype');
+}
+
+
+@theme{
+ --font-euclidMedium: "EuclidMedium";
+ --font-eculidLight:"EuclidLight";
+ --font-eculidBold:"EuclidBold"
+
 }

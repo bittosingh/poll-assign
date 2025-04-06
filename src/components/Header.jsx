@@ -45,7 +45,8 @@ function Header() {
       <div className="flex items-center space-x-6">
         <Link
           to={isSignUp ? "/" : "/signup"}
-          className="text-base sm:text-lg lg:text-xl text-[#374756] pr-6 sm:pr-8 md:pr-12 no-underline font-[Roboto]"
+          className="text-base sm:text-lg lg:text-xl text-[#374756] md:pr-6 sm:pr-8 md:pr-12 no-underline font-sans font-[400]"
+
           onClick={handleToggle}
         >
           {isSignUp ? "Log In" : "Sign Up"}

@@ -2,6 +2,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import { toast } from "react-toastify";
 import axios from 'axios';
 import { BASE_URL } from "../constant/constant";
+
 export const loginUser = createAsyncThunk(
   "auth/loginUser",
   async (userCredentials, { rejectWithValue }) => {
@@ -15,12 +16,10 @@ export const loginUser = createAsyncThunk(
           },
         }
       );
-      
-      const { token, user } = response.data;
-      localStorage.setItem("token", JSON.stringify(token));
+      const { usertoken, user } = response.data;
+      localStorage.setItem("usertoken", JSON.stringify(usertoken));
       localStorage.setItem("user", JSON.stringify(user));
-
-      return { token, user };
+      return { usertoken, user };
     } catch (error) {
       console.error("Error:", error);
       const errorMessage =
@@ -33,17 +32,17 @@ export const loginUser = createAsyncThunk(
 const authSlice = createSlice({
   name: "auth",
   initialState: {
-    user: JSON.parse(localStorage.getItem("user")) || null,  // Retrieve user from localStorage
-    token: JSON.parse(localStorage.getItem("token")) || null,           // Retrieve token from localStorage
+    user: null,
+    usertoken: null,
     loading: false,
     error: null,
   },
   reducers: {
     logout: (state) => {
-      localStorage.removeItem("token");
+      localStorage.removeItem("usertoken");
       localStorage.removeItem("user");
       state.user = null;
-      state.token = null;
+      state.usertoken = null;
     },
   },
   extraReducers: (builder) => {
@@ -52,9 +51,9 @@ const authSlice = createSlice({
         state.loading = true;
       })
       .addCase(loginUser.fulfilled, (state, action) => {
-        const { user, token } = action.payload;
+        const { user, usertoken } = action.payload;
         state.user = user;
-        state.token = token;
+        state.usertoken = usertoken;
         state.loading = false;
         state.error = null;
         toast.success("Login successful!");
@@ -65,5 +64,5 @@ const authSlice = createSlice({
       });
   },
 });
-
+export const { logout } = authSlice.actions;
 export default authSlice.reducer;
